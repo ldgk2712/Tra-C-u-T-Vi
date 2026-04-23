@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Horoscope": {
+      "title": "Horoscope",
+      "description": "Saved horoscope data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Owner UID" },
+        "name": { "type": "string", "description": "Name of the person" },
+        "dob": { "type": "string", "description": "Date of birth" },
+        "hour": { "type": "string", "description": "Hour of birth" },
+        "gender": { "type": "string", "description": "Gender" },
+        "viewYear": { "type": "string", "description": "Year of view" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "dob", "hour", "gender", "viewYear", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "/horoscopes/{horoscopeId}": {
+      "schema": { "$ref": "#/entities/Horoscope" },
+      "description": "Saved horoscopes"
+    }
+  }
+}
