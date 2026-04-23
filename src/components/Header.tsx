@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           </button>
 
           <nav className="hidden items-center gap-8 text-[14px] font-medium text-[#1f1d1b] md:flex">
-            <a className="transition-colors hover:text-[#aa771e]" href="#menh">Tính Mệnh</a>
+            <a className="transition-colors hover:text-[#aa771e]" href="#menh">Tính Năng</a>
             <a className="transition-colors hover:text-[#aa771e]" href="#pricing">Bảng Giá</a>
             <a className="transition-colors hover:text-[#aa771e]" href="#knowledge">Kiến Thức</a>
             <a className="transition-colors hover:text-[#aa771e]" href="#about">Giới Thiệu</a>
