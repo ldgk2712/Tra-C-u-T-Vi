@@ -10,6 +10,13 @@
 }
 
 @layer base {
+  html,
+  body,
+  #root {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   body {
     background-color: #f7f3e9;
     position: relative;
@@ -31,20 +38,20 @@
 
 @layer utilities {
   .homepage-compact-field > div > div:first-child {
-    min-height: 40px;
-    height: 40px;
+    min-height: 36px;
+    height: 36px;
     border-radius: 4px;
-    padding: 0 12px;
+    padding: 0 10px;
     box-shadow: none;
   }
 
   .homepage-compact-field span {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .homepage-compact-field svg {
-    width: 17px;
-    height: 17px;
+    width: 16px;
+    height: 16px;
   }
 
   .custom-scrollbar::-webkit-scrollbar {

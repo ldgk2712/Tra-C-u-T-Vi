@@ -13,25 +13,25 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
   return (
     <header className="absolute inset-x-0 top-0 z-50 bg-transparent">
       <div className="mx-auto max-w-[1432px] px-6 sm:px-8 lg:px-10">
-        <div className="flex h-[98px] items-center justify-between">
+        <div className="flex h-[76px] items-center justify-between">
           <button
             type="button"
             className="flex items-center gap-3"
             onClick={() => onNavigate('home')}
             aria-label="AstroTuVi trang chủ"
           >
-            <span className="grid h-10 w-10 place-items-center rounded-full border border-[#b88327] text-[#b88327]">
-              <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round">
+            <span className="grid h-9 w-9 place-items-center rounded-full border border-[#b88327] text-[#b88327]">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 3.5 13.9 9.2 19.5 7.2 15.8 12l3.7 4.8-5.6-2-1.9 5.7-1.9-5.7-5.6 2L8.2 12 4.5 7.2l5.6 2L12 3.5Z" />
                 <path d="M18.8 3.8h.01M20.9 5.9h.01" />
               </svg>
             </span>
-            <span className="font-serif text-[34px] font-semibold leading-none tracking-[-0.01em] text-[#1f1d1b]">
+            <span className="font-serif text-[28px] font-semibold leading-none tracking-[-0.01em] text-[#1f1d1b]">
               AstroTuVi
             </span>
           </button>
 
-          <nav className="hidden items-center gap-[50px] text-[15px] font-medium text-[#1f1d1b] md:flex">
+          <nav className="hidden items-center gap-8 text-[14px] font-medium text-[#1f1d1b] md:flex">
             <a className="transition-colors hover:text-[#aa771e]" href="#menh">Tính Mệnh</a>
             <a className="transition-colors hover:text-[#aa771e]" href="#pricing">Bảng Giá</a>
             <a className="transition-colors hover:text-[#aa771e]" href="#knowledge">Kiến Thức</a>
@@ -60,13 +60,13 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                   <button
                     type="button"
                     onClick={signInWithGoogle}
-                    className="h-10 rounded-md border border-[#b88327]/80 px-5 text-[14px] font-medium text-[#a06f1f] transition-colors hover:bg-white/70"
+                    className="h-9 rounded-md border border-[#b88327]/80 px-4 text-[13px] font-medium text-[#a06f1f] transition-colors hover:bg-white/70"
                   >
                     Đăng Nhập
                   </button>
                   <button
                     type="button"
-                    className="h-10 rounded-md bg-[#1f1d1b] px-6 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#2d2b29]"
+                    className="h-9 rounded-md bg-[#1f1d1b] px-5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2d2b29]"
                   >
                     Dùng Thử Ngay
                   </button>
