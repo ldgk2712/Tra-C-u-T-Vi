@@ -30,6 +30,23 @@
 }
 
 @layer utilities {
+  .homepage-compact-field > div > div:first-child {
+    min-height: 40px;
+    height: 40px;
+    border-radius: 4px;
+    padding: 0 12px;
+    box-shadow: none;
+  }
+
+  .homepage-compact-field span {
+    font-size: 14px;
+  }
+
+  .homepage-compact-field svg {
+    width: 17px;
+    height: 17px;
+  }
+
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
   }
