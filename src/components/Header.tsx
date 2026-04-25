@@ -60,15 +60,9 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                   <button
                     type="button"
                     onClick={signInWithGoogle}
-                    className="h-9 rounded-md border border-[#b88327]/80 px-4 text-[13px] font-medium text-[#a06f1f] transition-colors hover:bg-white/70"
+                    className="h-9 rounded-md border border-[#b88327]/80 px-4 text-[13px] font-medium text-[#a06f1f] transition-all hover:bg-white/70 hover:shadow-sm cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
                   >
                     Đăng Nhập
-                  </button>
-                  <button
-                    type="button"
-                    className="h-9 rounded-md bg-[#1f1d1b] px-5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2d2b29]"
-                  >
-                    Dùng Thử Ngay
                   </button>
                 </>
               )

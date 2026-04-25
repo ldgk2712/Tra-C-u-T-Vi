@@ -237,15 +237,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
             </div>
 
             <label className="mb-1.5 mt-3 block text-[13px] font-medium text-[#2b2825]">Giới tính</label>
-            <div className="grid grid-cols-2 gap-0" role="group" aria-label="Chọn giới tính">
+            <div className="flex w-full" role="group" aria-label="Chọn giới tính">
               {['Nam giới', 'Nữ giới'].map((gender) => (
                 <button
                   key={gender}
                   type="button"
                   aria-pressed={formData.gender === gender}
                   onClick={() => setFormData({ ...formData, gender })}
-                  className={`h-9 border text-[13px] transition-colors ${gender === 'Nam giới' ? 'rounded-l' : 'rounded-r -ml-px'} ${
-                    formData.gender === gender ? 'border-[#c58f35] bg-[#fffaf1] text-[#9b6b1d]' : 'border-[#e4ded8] bg-white text-[#4d4642]'
+                  className={`relative flex-1 h-9 border text-[13px] transition-all cursor-pointer ${gender === 'Nam giới' ? 'rounded-l' : 'rounded-r -ml-px'} ${
+                    formData.gender === gender ? 'z-10 border-[#c58f35] bg-[#fffaf1] text-[#9b6b1d]' : 'z-0 border-[#e4ded8] bg-white text-[#4d4642] hover:bg-[#faf4ec]'
                   }`}
                 >
                   <span className="mr-2">{gender === 'Nam giới' ? '♂' : '♀'}</span>
@@ -254,7 +254,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
               ))}
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="mt-4 flex h-[52px] w-full flex-col items-center justify-center rounded-md bg-[#1f1d1b] text-white shadow-[0_10px_22px_rgba(20,16,10,0.22)] transition-colors hover:bg-[#2d2b29] disabled:opacity-60 disabled:cursor-not-allowed">
+            <button type="submit" disabled={isSubmitting} className="mt-4 flex h-[52px] w-full flex-col items-center justify-center rounded-md bg-[#B98C4E] text-white shadow-[0_10px_22px_rgba(185,140,78,0.22)] transition-all hover:bg-[#A67E45] hover:shadow-[0_12px_24px_rgba(185,140,78,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
               {isSubmitting ? (
                 <span className="flex items-center gap-2 text-[15px] font-medium">
                   <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -265,12 +265,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
               ) : (
                 <>
                   <span className="flex items-center gap-2 text-[16px] font-medium">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
-                    </svg>
-                    Khởi tạo lá số
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    Khai Mở Lá Số
                   </span>
-                  <span className="mt-0.5 text-[12px] opacity-75">Miễn phí · Không cần đăng ký</span>
+                  <span className="mt-0.5 text-[12px] opacity-75">Miễn phí</span>
                 </>
               )}
             </button>
@@ -309,7 +307,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
                 <>
                   <div className="space-y-2">
                     {visibleHoroscopes.map((item) => (
-                      <div key={item.id} className="group flex items-center gap-3 rounded-md border border-[#eee5dc] bg-white/76 p-2.5 transition-colors hover:border-[#d8b77c] hover:bg-[#fffaf1]">
+                      <div key={item.id} className="group flex items-center gap-3 rounded-md border border-[#eee5dc] bg-white/76 p-2.5 transition-all hover:border-[#d8b77c] hover:bg-[#fffaf1] hover:-translate-y-0.5 hover:shadow-sm cursor-pointer">
                         <button
                           type="button"
                           onClick={() => onGenerate({
@@ -321,7 +319,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
                             viewYear: item.viewYear || new Date().getFullYear().toString(),
                             analyses: item.analyses || {},
                           })}
-                          className="min-w-0 flex-1 text-left"
+                          className="min-w-0 flex-1 text-left cursor-pointer"
                         >
                           <p className="truncate text-[13px] font-semibold text-[#2b2825]">{item.name || 'Lá số chưa đặt tên'}</p>
                           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#766e68]">
@@ -338,7 +336,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
                         <button
                           type="button"
                           onClick={() => setShowDeleteModal(item.id)}
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[#9b8f87] transition-colors hover:bg-red-50 hover:text-red-600"
+                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[#9b8f87] transition-all hover:bg-red-50 hover:text-red-600 active:scale-90 cursor-pointer"
                           aria-label={`Xóa lá số ${item.name || ''}`}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -351,7 +349,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
                     <button
                       type="button"
                       onClick={() => setShowAll(true)}
-                      className="mt-2 w-full text-center text-[11px] font-medium text-[#9b6b1d] hover:underline"
+                      className="mt-2 w-full text-center text-[11px] font-medium text-[#9b6b1d] hover:underline hover:text-[#bd8429] transition-colors cursor-pointer"
                     >
                       Xem thêm {hiddenCount} lá số
                     </button>
@@ -463,8 +461,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
             <h3 className="mb-3 font-serif text-2xl font-semibold">Xác nhận xóa</h3>
             <p className="mb-7 text-sm leading-relaxed text-[#625b56]">Bạn có chắc chắn muốn xóa lá số này không? Hành động này không thể hoàn tác.</p>
             <div className="grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setShowDeleteModal(null)} className="h-11 rounded border border-[#e0d8d0] text-[#5f5751]">Hủy</button>
-              <button type="button" onClick={() => handleDelete(showDeleteModal)} className="h-11 rounded bg-red-600 font-medium text-white">Xóa</button>
+              <button type="button" onClick={() => setShowDeleteModal(null)} className="h-11 rounded border border-[#e0d8d0] text-[#5f5751] transition-all hover:bg-[#f6eee5] active:scale-95 cursor-pointer">Hủy</button>
+              <button type="button" onClick={() => handleDelete(showDeleteModal)} className="h-11 rounded bg-red-600 font-medium text-white transition-all hover:bg-red-700 hover:shadow-md active:scale-95 cursor-pointer">Xóa</button>
             </div>
           </div>
         </div>
