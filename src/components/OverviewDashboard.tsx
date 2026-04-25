@@ -91,6 +91,21 @@ const GaugeChart: React.FC<{
 /* ─── Mini palace grid (4×4 with central 2×2) ─── */
 const MiniGrid: React.FC<{ palaces: Palace[] }> = ({ palaces }) => {
   const getPalace = (id: string) => palaces.find(p => p.id === id);
+
+  /* Split "Cự Môn (H)" → { main: "Cự Môn", status: "(H)" } */
+  const toTitleCaseVi = (text: string) =>
+  text
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+  const parseStarName = (name: string) => {
+    const m = name.match(/^(.+?)\s*(\([^)]+\))\s*$/);
+    return m
+      ? { main: toTitleCaseVi(m[1]), status: m[2] }
+      : { main: toTitleCaseVi(name), status: '' };
+  };
+
   const outer: { id: string; row: number; col: number }[] = [
     { id: 'ty', row: 1, col: 1 }, { id: 'ngo', row: 1, col: 2 },
     { id: 'mui', row: 1, col: 3 }, { id: 'than', row: 1, col: 4 },
@@ -111,26 +126,39 @@ const MiniGrid: React.FC<{ palaces: Palace[] }> = ({ palaces }) => {
           <div
             key={cell.id}
             style={{ gridColumn: cell.col, gridRow: cell.row }}
-            className="bg-[#fffdf8] hover:bg-[#fff9ee] transition-colors duration-200 flex flex-col items-center justify-center overflow-hidden p-0.5 min-h-0 cursor-default"
+            className="bg-[#fffdf8] hover:bg-[#fff9ee] transition-colors duration-200 flex flex-col items-center justify-start overflow-hidden pt-2 pb-0 px-0.5"
           >
-            <div className="text-[9px] font-bold text-[#2b2218] text-center leading-none truncate w-full px-0.5">
-              {p?.name?.slice(0, 7) || ''}
+            <div className="w-full origin-top scale-[0.85] flex flex-col items-center gap-0">
+            {/* Palace name — fixed top anchor, leading-tight keeps diacritics safe */}
+            <div className="text-[7px] font-bold text-[#2b2218] text-center leading-tight break-words w-full px-0.5 mb-px">
+              {p?.name || ''}
             </div>
-            {p?.mainStars[0] && (
-              <div className="text-[8px] text-[#c4a96a] leading-none truncate w-full text-center mt-[2px] px-0.5">
-                {p.mainStars[0].name.split(' ')[0]}
-              </div>
-            )}
+            {/* All stars stacked — gap-0 reclaims the inter-item space */}
+            <div className="flex flex-col items-center gap-0 w-full">
+              {p?.mainStars.map((star, idx) => {
+                const { main, status } = parseStarName(star.name);
+                return (
+                  <div key={idx} className="leading-[0.75] w-full text-center px-0.5 break-words">
+                    <span className="text-[7px] text-[#c4a96a]">{main}</span>
+                    {status && (
+                      <span className="text-[6.5px] text-[#c4a96a]/55 ml-[1px]">{status}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            </div>
           </div>
         );
       })}
-      {/* Central 2×2 */}
+
+      {/* Central 2×2 — inset shadow creates subtle depth vs the flat outer cells */}
       <div
         style={{ gridColumn: '2 / 4', gridRow: '2 / 4' }}
-        className="bg-gradient-to-br from-[#f8f0e3] to-[#f0e6d2] flex flex-col items-center justify-center border border-[#e0cca0]/40"
+        className="bg-gradient-to-br from-[#f8f0e3] to-[#ecdcc0] flex flex-col items-center justify-center gap-2 border border-[#d8c090]/50 shadow-[inset_0_2px_10px_rgba(160,120,40,0.10)]"
       >
         <span className="text-[22px] text-[#c4a96a] leading-none">☯</span>
-        <span className="text-[8px] font-bold text-[#b88327] uppercase tracking-widest mt-1">Thiên Bàn</span>
+        <span className="text-[8px] font-bold text-[#b88327] uppercase tracking-widest">Thiên Bàn</span>
       </div>
     </div>
   );
@@ -587,7 +615,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ onNavigate
                 action={
                   <button
                     onClick={() => onNavigate('chart')}
-                    className="flex items-center gap-0.5 text-[9px] font-semibold text-[#b88327] hover:text-[#9a7020] transition-colors duration-150"
+                    className="flex items-center gap-0.5 text-[10px] font-semibold text-[#b88327] hover:text-[#9a7020] transition-colors duration-150"
                   >
                     Xem đầy đủ <ChevronRight size={11} />
                   </button>
@@ -595,11 +623,11 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ onNavigate
               />
               <div className="p-3 flex flex-col gap-2">
                 <MiniGrid palaces={palaces} />
-                <div className="flex items-center justify-between text-[11px] text-[#a09080] px-0.5">
+                <div className="flex items-center justify-between text-[8px] text-[#a09080] px-0.5">
                   <span>{info.menh}</span>
                   <span>{info.cuc}</span>
                 </div>
-                <div className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center justify-between text-[8px]">
                   <span className="text-[#8a7968]">Mệnh: <strong className="text-[#3a2e24]">{info.menhChu}</strong></span>
                   <span className="text-[#8a7968]">Thân: <strong className="text-[#3a2e24]">{info.thanChu}</strong></span>
                 </div>
