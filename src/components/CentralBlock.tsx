@@ -5,84 +5,87 @@ interface CentralBlockProps {
   info: CentralInfo;
 }
 
+const TaiCuc: React.FC = () => (
+  <svg width="60" height="60" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="47" fill="white" stroke="#c4a96a" strokeWidth="1.5" />
+    {/* Dark (Âm) half - bottom */}
+    <path d="M50 3 A47 47 0 0 1 50 97 A23.5 23.5 0 0 0 50 50 A23.5 23.5 0 0 1 50 3 Z" fill="#1a1916" />
+    {/* Small white circle in dark half (top of dark = yang inside yin) */}
+    <circle cx="50" cy="26.5" r="11.75" fill="white" />
+    {/* Small dark circle in light half (bottom of light = yin inside yang) */}
+    <circle cx="50" cy="73.5" r="11.75" fill="#1a1916" />
+  </svg>
+);
+
 export const CentralBlock: React.FC<CentralBlockProps> = ({ info }) => {
   return (
-    <div className="h-full w-full bg-[#fffdfa] flex flex-col items-center justify-center p-0.5 sm:p-4 relative overflow-hidden rounded-lg">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02] flex items-center justify-center">
-        <div className="w-[120%] h-[120%] rounded-full border-[1px] border-amber-900/20" style={{ backgroundImage: 'repeating-radial-gradient(circle at center, transparent 0, transparent 20px, rgba(120, 53, 15, 0.1) 20px, rgba(120, 53, 15, 0.1) 21px)' }}></div>
+    <div className="h-full w-full bg-[#fffdf9] flex flex-col items-center overflow-hidden border border-[#e8ddd0]">
+      {/* Title bar */}
+      <div className="text-center py-2 w-full border-b border-[#e8ddd0]">
+        <h2 className="font-serif font-bold text-[12px] text-[#2b2218] tracking-[0.2em] uppercase leading-none">THIÊN BÀN</h2>
+        <div className="flex items-center justify-center mt-1 gap-1.5">
+          <div className="h-px w-6 bg-[#c4a96a]/50" />
+          <div className="w-1 h-1 rounded-full bg-[#c4a96a]/70" />
+          <div className="h-px w-6 bg-[#c4a96a]/50" />
+        </div>
       </div>
 
-      <div className="w-full max-w-sm mx-auto flex flex-col relative z-10 h-full justify-center">
-        <div className="my-auto">
-          {/* Header */}
-          <div className="text-center mb-1 sm:mb-4">
-            <h1 className="text-[8px] sm:text-2xl font-bold text-gray-900 tracking-widest font-serif leading-none">LÁ SỐ TỬ VI</h1>
-            <div className="flex items-center justify-center mt-0.5 sm:mt-1.5 space-x-1 sm:space-x-2">
-              <div className="h-px w-4 sm:w-12 bg-amber-600/40"></div>
-              <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-amber-600/60"></div>
-              <div className="h-px w-4 sm:w-12 bg-amber-600/40"></div>
+      {/* Content: two-column layout */}
+      <div className="flex flex-1 w-full overflow-hidden">
+        {/* Left: Yin-yang + key labels */}
+        <div className="flex flex-col items-center justify-center w-[45%] px-2 py-2 border-r border-[#e8ddd0]/60 gap-2">
+          <TaiCuc />
+          <div className="text-center space-y-0.5">
+            <p className="text-[8px] font-bold uppercase tracking-[0.12em] text-[#c4a96a]">Lá Số Tử Vi</p>
+            <p className="text-[10px] font-bold text-[#2b2218] truncate max-w-[100px] text-center">{info.name}</p>
+            <p className="text-[8.5px] text-[#8a7a6a]">{info.menh}</p>
+            <p className="text-[8.5px] text-[#8a7a6a]">{info.cuc}</p>
+          </div>
+          <div className="w-full border-t border-[#e8ddd0]/60 pt-1.5 space-y-1 text-center">
+            <div>
+              <p className="text-[7.5px] text-[#a09080] uppercase tracking-[0.1em]">Mệnh Chủ</p>
+              <p className="text-[10px] font-semibold text-[#3a2e24]">{info.menhChu}</p>
+            </div>
+            <div>
+              <p className="text-[7.5px] text-[#a09080] uppercase tracking-[0.1em]">Thân Chủ</p>
+              <p className="text-[10px] font-semibold text-[#3a2e24]">{info.thanChu}</p>
             </div>
           </div>
+        </div>
 
-          {/* Info Table */}
-          <div className="bg-white/60 rounded-lg sm:rounded-xl p-1.5 sm:p-6 shadow-sm border border-amber-900/5 backdrop-blur-sm w-full">
-            <div className="grid grid-cols-[30px_1fr_1fr] sm:grid-cols-[90px_1fr_1fr] gap-x-1 sm:gap-x-4 gap-y-0.5 sm:gap-y-3.5 text-[5px] sm:text-[13px] leading-tight">
-              
-              {/* Name */}
-              <div className="text-gray-500 font-medium">Họ tên</div>
-              <div className="col-span-2 font-bold text-amber-900 text-[6px] sm:text-[16px]">{info.name}</div>
-              
-              <div className="col-span-3 h-px bg-amber-900/10 my-0.5 sm:my-1.5"></div>
-
-              {/* Birth Info */}
-              <div className="text-gray-500 font-medium">Năm</div>
-              <div className="font-medium text-gray-800">{info.birthYear}</div>
-              <div className="font-medium text-gray-600">{info.birthYearCanChi}</div>
-              
-              <div className="text-gray-500 font-medium">Tháng</div>
-              <div className="font-medium text-gray-800">{info.lunarMonth}</div>
-              <div className="font-medium text-gray-600">{info.lunarMonthCanChi}</div>
-              
-              <div className="text-gray-500 font-medium">Ngày</div>
-              <div className="font-medium text-gray-800">{info.lunarDay}</div>
-              <div className="font-medium text-gray-600">{info.lunarDayCanChi}</div>
-              
-              <div className="text-gray-500 font-medium">Giờ</div>
-              <div className="font-medium text-gray-800">{info.birthHour}</div>
-              <div className="font-medium text-gray-600">{info.birthHourCanChi}</div>
-              
-              <div className="col-span-3 h-px bg-amber-900/10 my-0.5 sm:my-1.5"></div>
-
-              {/* View Year */}
-              <div className="text-gray-500 font-medium">Xem</div>
-              <div className="font-medium text-gray-800">{info.viewYear}</div>
-              <div className="font-medium text-gray-600">{info.viewYearCanChi} ({info.age}t)</div>
-              
-              <div className="col-span-3 h-px bg-amber-900/10 my-0.5 sm:my-1.5"></div>
-
-              {/* Astrological Info */}
-              <div className="text-gray-500 font-medium">Â.Dương</div>
-              <div className="col-span-2 font-medium text-gray-800">{info.amDuong} - <span className="text-gray-600 truncate inline-block max-w-[50px] sm:max-w-none align-bottom">{info.amDuongNghichLy}</span></div>
-              
-              <div className="text-gray-500 font-medium">B.Mệnh</div>
-              <div className="col-span-2 font-medium text-gray-800 truncate">{info.menh}</div>
-              
-              <div className="text-gray-500 font-medium">Cục</div>
-              <div className="col-span-2 font-medium text-gray-800">{info.cuc} - <span className="text-gray-600 truncate inline-block max-w-[50px] sm:max-w-none align-bottom">{info.cucMenhRelation}</span></div>
-              
-              <div className="col-span-3 h-px bg-amber-900/10 my-0.5 sm:my-1.5"></div>
-
-              {/* Chu */}
-              <div className="text-gray-500 font-medium">M.chủ</div>
-              <div className="col-span-2 font-medium text-gray-800">{info.menhChu}</div>
-              
-              <div className="text-gray-500 font-medium">T.chủ</div>
-              <div className="col-span-2 font-medium text-gray-800">{info.thanChu}</div>
-            </div>
-          </div>
+        {/* Right: Info table */}
+        <div className="flex-1 px-2 py-2 overflow-y-auto">
+          <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-[#c4a96a] mb-1.5">Thông tin</p>
+          <table className="w-full text-[9.5px] leading-snug">
+            <tbody>
+              <InfoRow label="Họ tên" value={info.name} bold />
+              <Divider />
+              <InfoRow label="Năm" value={`${info.birthYear} · ${info.birthYearCanChi}`} />
+              <InfoRow label="Tháng" value={`${info.lunarMonth} · ${info.lunarMonthCanChi}`} />
+              <InfoRow label="Ngày" value={`${info.lunarDay} · ${info.lunarDayCanChi}`} />
+              <InfoRow label="Giờ" value={`${info.birthHour}`} />
+              <InfoRow label="" value={info.birthHourCanChi} muted />
+              <Divider />
+              <InfoRow label="Xem" value={`${info.viewYear} · ${info.viewYearCanChi}`} />
+              <InfoRow label="Tuổi" value={info.age} />
+              <Divider />
+              <InfoRow label="Â.Dương" value={info.amDuong} />
+              <InfoRow label="" value={info.amDuongNghichLy} muted />
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   );
 };
+
+const InfoRow: React.FC<{ label: string; value: string; bold?: boolean; muted?: boolean }> = ({ label, value, bold, muted }) => (
+  <tr>
+    <td className="text-[#9a8878] font-medium pr-1.5 pb-0.5 align-top whitespace-nowrap">{label}</td>
+    <td className={`pb-0.5 align-top ${bold ? 'font-bold text-[#1f1d1b]' : muted ? 'text-[#a09080]' : 'font-medium text-[#3a2e24]'}`}>{value}</td>
+  </tr>
+);
+
+const Divider: React.FC = () => (
+  <tr><td colSpan={2}><div className="h-px bg-[#ede5da] my-1" /></td></tr>
+);

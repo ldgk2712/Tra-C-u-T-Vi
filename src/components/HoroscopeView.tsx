@@ -1,28 +1,44 @@
 import React, { useState, useRef } from 'react';
-import { Eye, EyeOff, Download } from 'lucide-react';
+import { Eye, EyeOff, Download, Share2, LayoutDashboard, Star, TrendingUp, CalendarDays, Info, BarChart2, PieChart, Settings, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { PalaceCell } from './PalaceCell';
 import { CentralBlock } from './CentralBlock';
 import { AIAnalysisTabs } from './AIAnalysisTabs';
 import { CustomSelect } from './CustomSelect';
 import { FloatingChat } from './FloatingChat';
 import { mockPalaces, mockCentralInfo, Palace, CentralInfo } from '../data/mockData';
+import { useAuth } from '../contexts/AuthContext';
 import * as htmlToImage from 'html-to-image';
 
 interface HoroscopeViewProps {
-  onNavigate: (view: 'home' | 'chart') => void;
+  onNavigate: (view: 'home' | 'chart' | 'overview') => void;
   chartData?: { palaces: Palace[], centralInfo: CentralInfo } | null;
   onYearChange?: (year: number) => void;
 }
+
+const NavItem: React.FC<{ icon: React.ReactNode; label: string; active?: boolean; onClick?: () => void }> = ({ icon, label, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all ${
+      active
+        ? 'bg-[#d4af37]/15 text-[#d4af37]'
+        : 'text-white/60 hover:text-white/90 hover:bg-white/5'
+    }`}
+  >
+    <span className={`flex-shrink-0 ${active ? 'text-[#d4af37]' : 'text-white/50'}`}>{icon}</span>
+    <span className="truncate">{label}</span>
+    {active && <ChevronRight size={14} className="ml-auto text-[#d4af37]/60" />}
+  </button>
+);
 
 export const HoroscopeView: React.FC<HoroscopeViewProps> = ({ onNavigate, chartData, onYearChange }) => {
   const [selectedPalace, setSelectedPalace] = useState<Palace | null>(null);
   const [showAnnualStars, setShowAnnualStars] = useState<boolean>(true);
   const chartRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
 
   const palaces = chartData?.palaces || mockPalaces;
   const centralInfo = chartData?.centralInfo || mockCentralInfo;
 
-  // Helper to find a palace by its ID
   const getPalace = (id: string) => palaces.find(p => p.id === id);
 
   const handlePalaceClick = (palace: Palace) => {
@@ -33,7 +49,7 @@ export const HoroscopeView: React.FC<HoroscopeViewProps> = ({ onNavigate, chartD
   const handleDownload = async () => {
     if (chartRef.current) {
       try {
-        const dataUrl = await htmlToImage.toPng(chartRef.current, { 
+        const dataUrl = await htmlToImage.toPng(chartRef.current, {
           quality: 1.0,
           pixelRatio: 2,
           backgroundColor: '#f7f3e9'
@@ -43,7 +59,7 @@ export const HoroscopeView: React.FC<HoroscopeViewProps> = ({ onNavigate, chartD
         link.href = dataUrl;
         link.click();
       } catch (err) {
-        console.error("Failed to download chart", err);
+        console.error('Failed to download chart', err);
       }
     }
   };
@@ -52,20 +68,16 @@ export const HoroscopeView: React.FC<HoroscopeViewProps> = ({ onNavigate, chartD
     const p1 = getPalace(p1Id);
     const p2 = getPalace(p2Id);
     if (!p1 || !p2) return null;
-
     const hasTuan = p1.isTuan && p2.isTuan;
     const hasTriet = p1.isTriet && p2.isTriet;
-
     if (!hasTuan && !hasTriet) return null;
-
     let text = '';
     if (hasTuan && hasTriet) text = 'Tuần - Triệt';
     else if (hasTuan) text = 'Tuần';
     else if (hasTriet) text = 'Triệt';
-
     return (
-      <div 
-        className="absolute z-20 px-0.5 sm:px-1.5 py-0 sm:py-[1px] bg-gray-800/60 backdrop-blur-sm text-white/90 text-[4px] sm:text-[8px] font-bold rounded-sm shadow-sm border border-gray-600/30 whitespace-nowrap tracking-wide"
+      <div
+        className="absolute z-20 px-1.5 py-[1px] bg-gray-800/70 backdrop-blur-sm text-white/90 text-[8px] font-bold rounded-sm shadow-sm border border-gray-600/30 whitespace-nowrap tracking-wide"
         style={{ top, left, transform }}
       >
         {text}
@@ -73,208 +85,252 @@ export const HoroscopeView: React.FC<HoroscopeViewProps> = ({ onNavigate, chartD
     );
   };
 
-  const VanKhanh = ({ className }: { className?: string }) => (
-    <svg viewBox="0 0 100 100" className={className} fill="currentColor">
-      <path d="M20,50 Q30,30 50,50 T80,50 Q90,70 70,80 T30,80 Q10,70 20,50 Z M40,60 Q45,55 50,60 T60,60" opacity="0.15" />
-      <path d="M30,40 Q40,20 60,40 T90,40 Q100,60 80,70 T40,70 Q20,60 30,40 Z" opacity="0.1" />
-    </svg>
-  );
-
   return (
-    <div className="min-h-screen bg-[#f7f3e9] py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-amber-50/30 to-transparent pointer-events-none"></div>
-      
-      {/* Vân Khánh - Traditional Clouds */}
-      <VanKhanh className="absolute top-4 left-4 w-32 h-32 text-gold rotate-0" />
-      <VanKhanh className="absolute top-4 right-4 w-32 h-32 text-gold rotate-90" />
-      <VanKhanh className="absolute bottom-4 left-4 w-32 h-32 text-gold -rotate-90" />
-      <VanKhanh className="absolute bottom-4 right-4 w-32 h-32 text-gold rotate-180" />
-
-      {/* Geometric Frame */}
-      <div className="absolute inset-8 border border-gold/20 pointer-events-none"></div>
-      <div className="absolute inset-10 border-[0.5px] border-gold/10 pointer-events-none"></div>
-
-      <div className="max-w-6xl mx-auto relative z-10">
-        {/* Header/Title */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => onNavigate('home')}
-              className="p-2 text-maroon/60 hover:text-maroon hover:bg-maroon/5 rounded-full transition-colors"
-              title="Quay lại"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-serif font-bold text-gray-900">
-                Lá số của <span className="text-maroon">{centralInfo.name}</span>
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">Khám phá vận mệnh qua góc nhìn Tử Vi & AI</p>
-            </div>
-          </div>
-          <button 
-            onClick={() => document.getElementById('ai-analysis-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className="w-full sm:w-auto justify-center bg-maroon hover:bg-maroon/90 text-white px-6 py-2.5 rounded-full font-medium shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
+    <div className="flex h-screen overflow-hidden bg-[#1f1d1b]">
+      {/* ─── Left Sidebar ─── */}
+      <aside className="w-[220px] flex-shrink-0 flex flex-col bg-[#1f1d1b] border-r border-white/[0.06]">
+        {/* Logo */}
+        <div className="px-4 py-4 border-b border-white/[0.06]">
+          <button
+            onClick={() => onNavigate('home')}
+            className="flex items-center gap-2.5 group"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Luận giải toàn bộ - 219k
+            <span className="grid h-8 w-8 place-items-center rounded-full border border-[#d4af37]/60 text-[#d4af37] group-hover:border-[#d4af37] transition-colors">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3.5 13.9 9.2 19.5 7.2 15.8 12l3.7 4.8-5.6-2-1.9 5.7-1.9-5.7-5.6 2L8.2 12 4.5 7.2l5.6 2L12 3.5Z" />
+              </svg>
+            </span>
+            <span className="font-serif text-[20px] font-semibold text-white leading-none tracking-[-0.01em]">AstroTuVi</span>
           </button>
         </div>
 
-        {/* Chart Grid Container */}
-        <div ref={chartRef} className="bg-white/60 backdrop-blur-sm p-1 sm:p-4 md:p-8 rounded-2xl shadow-xl border border-gold/20 relative">
-          {/* Internal Frame for Chart */}
-          <div className="absolute inset-2 border border-gold/10 rounded-xl pointer-events-none"></div>
-          
-          <div className="w-full max-w-4xl mx-auto grid grid-cols-4 auto-rows-fr gap-0 border-[2px] sm:border-[3px] border-maroon/20 rounded-lg overflow-hidden shadow-inner bg-maroon/5 relative aspect-[3/4] sm:aspect-auto sm:min-h-[800px]">
-            
-            {/* Tuần/Triệt Badges */}
-            {/* Top Row (Horizontal) - Topmost of intersection */}
-            {renderTuanTrietBadge('ty', 'ngo', '0%', '25%', 'translate(-50%, 0)')}
-            {renderTuanTrietBadge('ngo', 'mui', '0%', '50%', 'translate(-50%, 0)')}
-            {renderTuanTrietBadge('mui', 'than', '0%', '75%', 'translate(-50%, 0)')}
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/25">Chính</p>
+          <NavItem icon={<LayoutDashboard size={16} />} label="Tổng quan" onClick={() => onNavigate('home')} />
+          <NavItem icon={<Star size={16} />} label="Lá Số Tử Vi" active />
+          <NavItem icon={<TrendingUp size={16} />} label="Tài vận" />
+          <NavItem icon={<CalendarDays size={16} />} label="Lịch" />
 
-            {/* Right Column (Vertical) - Middle of intersection */}
-            {renderTuanTrietBadge('than', 'dau', '25%', '87.5%', 'translate(-50%, -50%)')}
-            {renderTuanTrietBadge('dau', 'tuat', '50%', '87.5%', 'translate(-50%, -50%)')}
-            {renderTuanTrietBadge('tuat', 'hoi', '75%', '87.5%', 'translate(-50%, -50%)')}
+          <div className="my-3 border-t border-white/[0.06]" />
+          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/25">Khác</p>
+          <NavItem icon={<Info size={16} />} label="Thông tin" />
+          <NavItem icon={<BarChart2 size={16} />} label="Thống kê Orion Điện" />
+          <NavItem icon={<PieChart size={16} />} label="Tổng Cộng" />
+          <NavItem icon={<Settings size={16} />} label="Cài đặt" />
+        </nav>
 
-            {/* Bottom Row (Horizontal) - Topmost of intersection */}
-            {renderTuanTrietBadge('hoi', 'ty_bottom', '75%', '75%', 'translate(-50%, -50%)')}
-            {renderTuanTrietBadge('ty_bottom', 'suu', '75%', '50%', 'translate(-50%, -50%)')}
-            {renderTuanTrietBadge('suu', 'dan', '75%', '25%', 'translate(-50%, -50%)')}
-
-            {/* Left Column (Vertical) - Middle of intersection */}
-            {renderTuanTrietBadge('dan', 'mao', '75%', '12.5%', 'translate(-50%, -50%)')}
-            {renderTuanTrietBadge('mao', 'thin', '50%', '12.5%', 'translate(-50%, -50%)')}
-            {renderTuanTrietBadge('thin', 'ty', '25%', '12.5%', 'translate(-50%, -50%)')}
-
-            {/* Row 1 */}
-            <div className="col-start-1 row-start-1 h-full w-full">
-              {getPalace('ty') && <PalaceCell palace={getPalace('ty')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-            <div className="col-start-2 row-start-1 h-full w-full">
-              {getPalace('ngo') && <PalaceCell palace={getPalace('ngo')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-            <div className="col-start-3 row-start-1 h-full w-full">
-              {getPalace('mui') && <PalaceCell palace={getPalace('mui')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-            <div className="col-start-4 row-start-1 h-full w-full">
-              {getPalace('than') && <PalaceCell palace={getPalace('than')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-
-            {/* Row 2 */}
-            <div className="col-start-1 row-start-2 h-full w-full">
-              {getPalace('thin') && <PalaceCell palace={getPalace('thin')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-            {/* Central Block spans row 2-3, col 2-3 */}
-            <div className="col-start-2 col-span-2 row-start-2 row-span-2 h-full w-full p-1 overflow-hidden">
-              <CentralBlock info={centralInfo} />
-            </div>
-            <div className="col-start-4 row-start-2 h-full w-full">
-              {getPalace('dau') && <PalaceCell palace={getPalace('dau')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-
-            {/* Row 3 */}
-            <div className="col-start-1 row-start-3 h-full w-full">
-              {getPalace('mao') && <PalaceCell palace={getPalace('mao')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-            <div className="col-start-4 row-start-3 h-full w-full">
-              {getPalace('tuat') && <PalaceCell palace={getPalace('tuat')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-
-            {/* Row 4 */}
-            <div className="col-start-1 row-start-4 h-full w-full">
-              {getPalace('dan') && <PalaceCell palace={getPalace('dan')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-            <div className="col-start-2 row-start-4 h-full w-full">
-              {getPalace('suu') && <PalaceCell palace={getPalace('suu')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-            <div className="col-start-3 row-start-4 h-full w-full">
-              {getPalace('ty_bottom') && <PalaceCell palace={getPalace('ty_bottom')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-            <div className="col-start-4 row-start-4 h-full w-full">
-              {getPalace('hoi') && <PalaceCell palace={getPalace('hoi')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
-            </div>
-
-          </div>
-
-          {/* Legend */}
-          <div className="mt-4 sm:mt-8 flex flex-wrap justify-center sm:justify-between items-center text-[9px] sm:text-sm text-gray-600 border-t border-gold/20 pt-4 sm:pt-6 gap-2 sm:gap-4">
-            <div className="flex space-x-2 sm:space-x-4 bg-maroon/5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gold/10">
-              <span className="flex items-center gap-0.5 sm:gap-1"><strong className="text-red-600 font-serif">M:</strong> Miếu</span>
-              <span className="flex items-center gap-0.5 sm:gap-1"><strong className="text-orange-500 font-serif">V:</strong> Vượng</span>
-              <span className="flex items-center gap-0.5 sm:gap-1"><strong className="text-green-600 font-serif">Đ:</strong> Đắc</span>
-              <span className="flex items-center gap-0.5 sm:gap-1"><strong className="text-blue-600 font-serif">B:</strong> Bình hòa</span>
-              <span className="flex items-center gap-0.5 sm:gap-1"><strong className="text-gray-500 font-serif">H:</strong> Hãm</span>
-            </div>
-            <div className="flex space-x-2 sm:space-x-4 items-center bg-maroon/5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gold/10">
-              <div className="flex items-center"><span className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 rounded-full bg-slate-500 inline-block mr-1 sm:mr-1.5 shadow-sm"></span>Kim</div>
-              <div className="flex items-center"><span className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 rounded-full bg-green-600 inline-block mr-1 sm:mr-1.5 shadow-sm"></span>Mộc</div>
-              <div className="flex items-center"><span className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 rounded-full bg-black inline-block mr-1 sm:mr-1.5 shadow-sm"></span>Thủy</div>
-              <div className="flex items-center"><span className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 rounded-full bg-red-600 inline-block mr-1 sm:mr-1.5 shadow-sm"></span>Hỏa</div>
-              <div className="flex items-center"><span className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-600 inline-block mr-1 sm:mr-1.5 shadow-sm"></span>Thổ</div>
+        {/* Bottom user strip */}
+        <div className="px-3 py-3 border-t border-white/[0.06]">
+          <div className="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-white/5 transition-colors cursor-pointer">
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt="" className="h-7 w-7 rounded-full border border-white/20" referrerPolicy="no-referrer" />
+            ) : (
+              <div className="h-7 w-7 rounded-full bg-[#d4af37]/20 grid place-items-center text-[#d4af37] text-[11px] font-bold">
+                {(user?.displayName || user?.email || 'U')[0].toUpperCase()}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-medium text-white/80 truncate">{user?.displayName || 'Khách'}</p>
+              <p className="text-[10px] text-white/35 truncate">{user?.email || 'Chưa đăng nhập'}</p>
             </div>
           </div>
         </div>
+      </aside>
 
-        {/* Controls Bar */}
-        <div className="mt-6 flex justify-center relative z-50">
-          <div className="bg-white/60 backdrop-blur-md border border-gold/30 rounded-2xl p-1.5 flex flex-col sm:flex-row items-stretch shadow-sm gap-1.5 sm:gap-0">
-            <div className="w-full sm:w-44 border-b sm:border-b-0 sm:border-r border-gold/10 pb-1.5 sm:pb-0 sm:pr-1.5 flex items-center">
-              <CustomSelect
-                value={centralInfo.viewYear}
-                onChange={(value) => onYearChange && onYearChange(parseInt(value))}
-                prefix="Năm xem: "
-                transparent={true}
-                className="w-full text-maroon font-medium"
-                options={[...Array(13)].map((_, i) => {
-                  const currentYear = new Date().getFullYear();
-                  const year = currentYear - 2 + i;
-                  return {
-                    value: `${year}`,
-                    label: `${year}`
-                  };
-                })}
-              />
-            </div>
-            <div className="sm:pl-1.5 flex items-center justify-center gap-2">
-              <button
-                onClick={() => setShowAnnualStars(!showAnnualStars)}
-                className={`w-full sm:w-auto h-10 sm:h-full px-5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 border ${
-                  showAnnualStars 
-                    ? 'bg-maroon text-white border-gold/30 shadow-md hover:bg-maroon/90' 
-                    : 'bg-white/40 text-maroon border-gold/20 hover:bg-maroon/5'
-                }`}
-              >
-                {showAnnualStars ? (
-                  <>
-                    <EyeOff size={18} className="text-gold" />
-                    Ẩn sao lưu
-                  </>
-                ) : (
-                  <>
-                    <Eye size={18} className="text-gold" />
-                    Hiện sao lưu
-                  </>
-                )}
-              </button>
-              <button
-                onClick={handleDownload}
-                className="w-full sm:w-auto h-10 sm:h-full px-5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 bg-maroon text-white border border-gold/30 shadow-md hover:bg-maroon/90"
-                title="Tải lá số về máy"
-              >
-                <Download size={18} className="text-gold" />
-                Tải lá số
-              </button>
+      {/* ─── Main Content ─── */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#f7f3e9]">
+        {/* Top Header Bar */}
+        <header className="flex-shrink-0 flex items-center justify-between px-6 py-3 bg-[#f7f3e9] border-b border-[#e8ddd0] z-30">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-[13px]">
+            <button
+              onClick={() => onNavigate('home')}
+              className="flex items-center gap-1.5 text-[#8a7968] hover:text-[#5a4a3a] transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+              Trang chủ
+            </button>
+            <span className="text-[#c4b8a8]">/</span>
+            <span className="font-semibold text-[#2b2825]">Lá Số Tử Vi</span>
+            <ChevronRight size={14} className="text-[#c4b8a8]" />
+            <span className="text-[#8a7968] max-w-[180px] truncate">{centralInfo.name}</span>
+          </div>
+
+          {/* Actions + User */}
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#e0d5c8] bg-white/70 text-[12px] font-medium text-[#5a4a3a] hover:border-[#c4a96a] hover:bg-white transition-colors">
+              <SlidersHorizontal size={13} />
+            </button>
+            <button className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#e0d5c8] bg-white/70 text-[12px] font-medium text-[#5a4a3a] hover:border-[#c4a96a] hover:bg-white transition-colors">
+              <Share2 size={13} />
+              Chia sẻ
+            </button>
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#e0d5c8] bg-white/70 text-[12px] font-medium text-[#5a4a3a] hover:border-[#c4a96a] hover:bg-white transition-colors"
+            >
+              <Download size={13} />
+              Tải về
+            </button>
+            {/* User info */}
+            <div className="flex items-center gap-2 ml-2 pl-2 border-l border-[#e0d5c8]">
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt="" className="h-7 w-7 rounded-full border border-[#c4a96a]/40" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="h-7 w-7 rounded-full bg-[#d4af37]/20 grid place-items-center text-[#9a7020] text-[11px] font-bold border border-[#d4af37]/30">
+                  {(user?.displayName || centralInfo.name || 'U')[0].toUpperCase()}
+                </div>
+              )}
+              <span className="text-[12px] font-medium text-[#3a2e24] max-w-[100px] truncate">
+                {user?.displayName || centralInfo.name}
+              </span>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* AI Analysis Section */}
-        <div id="ai-analysis-section" className="mt-12">
-          <AIAnalysisTabs selectedPalace={selectedPalace} palaces={palaces} centralInfo={centralInfo} />
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-6 py-5">
+            {/* Page title + Luận giải CTA */}
+            <div className="flex items-center justify-between mb-4 max-w-[960px] mx-auto">
+              <div>
+                <h1 className="font-serif text-[22px] font-semibold text-[#1f1d1b] leading-tight">
+                  Lá số <span className="text-[#b88327]">{centralInfo.name}</span>
+                </h1>
+                <p className="text-[12px] text-[#8a7968] mt-0.5">Tử Vi · {centralInfo.birthYear} · {centralInfo.menh}</p>
+              </div>
+              <button
+                onClick={() => document.getElementById('ai-analysis-section')?.scrollIntoView({ behavior: 'smooth' })}
+                className="flex items-center gap-1.5 h-9 px-5 rounded-lg bg-[#1f1d1b] text-white text-[13px] font-medium hover:bg-[#2d2b29] transition-colors shadow-sm flex-shrink-0"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+                Luận giải toàn bộ
+                <span className="text-[#d4af37] font-semibold">219k</span>
+              </button>
+            </div>
+
+            {/* Chart Grid */}
+            <div ref={chartRef} className="bg-white/50 rounded-xl shadow-sm border border-[#e8ddd0] overflow-hidden max-w-[960px] mx-auto">
+              <div className="w-full grid grid-cols-4 grid-rows-4 border-[1.5px] border-[#c4a96a]/30 relative" style={{ aspectRatio: '4/3' }}>
+                {/* Tuần/Triệt Badges */}
+                {renderTuanTrietBadge('ty', 'ngo', '0%', '25%', 'translate(-50%, 0)')}
+                {renderTuanTrietBadge('ngo', 'mui', '0%', '50%', 'translate(-50%, 0)')}
+                {renderTuanTrietBadge('mui', 'than', '0%', '75%', 'translate(-50%, 0)')}
+                {renderTuanTrietBadge('than', 'dau', '25%', '100%', 'translate(-50%, -50%)')}
+                {renderTuanTrietBadge('dau', 'tuat', '50%', '100%', 'translate(-50%, -50%)')}
+                {renderTuanTrietBadge('tuat', 'hoi', '75%', '100%', 'translate(-50%, -50%)')}
+                {renderTuanTrietBadge('hoi', 'ty_bottom', '100%', '75%', 'translate(-50%, -100%)')}
+                {renderTuanTrietBadge('ty_bottom', 'suu', '100%', '50%', 'translate(-50%, -100%)')}
+                {renderTuanTrietBadge('suu', 'dan', '100%', '25%', 'translate(-50%, -100%)')}
+                {renderTuanTrietBadge('dan', 'mao', '75%', '0%', 'translate(0, -50%)')}
+                {renderTuanTrietBadge('mao', 'thin', '50%', '0%', 'translate(0, -50%)')}
+                {renderTuanTrietBadge('thin', 'ty', '25%', '0%', 'translate(0, -50%)')}
+
+                {/* Row 1 */}
+                <div className="col-start-1 row-start-1 h-full">
+                  {getPalace('ty') && <PalaceCell palace={getPalace('ty')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+                <div className="col-start-2 row-start-1 h-full">
+                  {getPalace('ngo') && <PalaceCell palace={getPalace('ngo')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+                <div className="col-start-3 row-start-1 h-full">
+                  {getPalace('mui') && <PalaceCell palace={getPalace('mui')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+                <div className="col-start-4 row-start-1 h-full">
+                  {getPalace('than') && <PalaceCell palace={getPalace('than')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+
+                {/* Row 2 */}
+                <div className="col-start-1 row-start-2 h-full">
+                  {getPalace('thin') && <PalaceCell palace={getPalace('thin')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+                {/* Central Block spans row 2-3, col 2-3 */}
+                <div className="col-start-2 col-span-2 row-start-2 row-span-2 h-full">
+                  <CentralBlock info={centralInfo} />
+                </div>
+                <div className="col-start-4 row-start-2 h-full">
+                  {getPalace('dau') && <PalaceCell palace={getPalace('dau')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+
+                {/* Row 3 */}
+                <div className="col-start-1 row-start-3 h-full">
+                  {getPalace('mao') && <PalaceCell palace={getPalace('mao')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+                <div className="col-start-4 row-start-3 h-full">
+                  {getPalace('tuat') && <PalaceCell palace={getPalace('tuat')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+
+                {/* Row 4 */}
+                <div className="col-start-1 row-start-4 h-full">
+                  {getPalace('dan') && <PalaceCell palace={getPalace('dan')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+                <div className="col-start-2 row-start-4 h-full">
+                  {getPalace('suu') && <PalaceCell palace={getPalace('suu')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+                <div className="col-start-3 row-start-4 h-full">
+                  {getPalace('ty_bottom') && <PalaceCell palace={getPalace('ty_bottom')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+                <div className="col-start-4 row-start-4 h-full">
+                  {getPalace('hoi') && <PalaceCell palace={getPalace('hoi')!} onClick={handlePalaceClick} showAnnualStars={showAnnualStars} />}
+                </div>
+              </div>
+
+              {/* Legend + Controls Bar */}
+              <div className="flex flex-wrap justify-between items-center px-4 py-3 border-t border-[#e8ddd0] gap-3 bg-white/30">
+                <div className="flex items-center gap-4 text-[11px] text-[#7a6a5a]">
+                  <span className="flex items-center gap-1"><strong className="text-red-600">M</strong> Miếu</span>
+                  <span className="flex items-center gap-1"><strong className="text-orange-500">V</strong> Vượng</span>
+                  <span className="flex items-center gap-1"><strong className="text-green-600">Đ</strong> Đắc</span>
+                  <span className="flex items-center gap-1"><strong className="text-blue-500">B</strong> Bình</span>
+                  <span className="flex items-center gap-1"><strong className="text-gray-500">H</strong> Hãm</span>
+                  <span className="w-px h-3 bg-[#e0d5c8]" />
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block" />Kim</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-600 inline-block" />Mộc</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-700 inline-block" />Thủy</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Hỏa</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-600 inline-block" />Thổ</span>
+                </div>
+
+                {/* Controls */}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <CustomSelect
+                      value={centralInfo.viewYear}
+                      onChange={(value) => onYearChange && onYearChange(parseInt(value))}
+                      prefix="Năm: "
+                      transparent={true}
+                      className="text-[12px] text-[#5a4a3a] font-medium"
+                      options={[...Array(13)].map((_, i) => {
+                        const year = new Date().getFullYear() - 2 + i;
+                        return { value: `${year}`, label: `${year}` };
+                      })}
+                    />
+                  </div>
+                  <button
+                    onClick={() => setShowAnnualStars(!showAnnualStars)}
+                    className={`flex items-center gap-1.5 h-7 px-3 rounded-md text-[12px] font-medium transition-all border ${
+                      showAnnualStars
+                        ? 'bg-[#1f1d1b] text-white border-transparent'
+                        : 'bg-white/60 text-[#5a4a3a] border-[#e0d5c8] hover:bg-white'
+                    }`}
+                  >
+                    {showAnnualStars ? <EyeOff size={13} /> : <Eye size={13} />}
+                    {showAnnualStars ? 'Ẩn sao lưu' : 'Sao lưu'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Analysis Section */}
+            <div id="ai-analysis-section" className="mt-8">
+              <AIAnalysisTabs selectedPalace={selectedPalace} palaces={palaces} centralInfo={centralInfo} />
+            </div>
+          </div>
         </div>
       </div>
 

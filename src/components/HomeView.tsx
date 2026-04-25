@@ -7,9 +7,21 @@ import { useAuth } from '../contexts/AuthContext';
 import { db } from '../lib/firebase';
 import backgroundHomepage from '../../original_images/background_homepage.svg';
 
+interface Horoscope {
+  id: string;
+  name: string;
+  dob: string;
+  hour: string;
+  gender: string;
+  viewYear: string;
+  analyses?: Record<string, unknown>;
+  createdAt?: unknown;
+  uid?: string;
+}
+
 interface HomeViewProps {
-  onNavigate: (view: 'home' | 'chart') => void;
-  onGenerate: (formData: any) => void;
+  onNavigate?: (view: 'home' | 'chart' | 'overview') => void;
+  onGenerate: (formData: unknown) => void | Promise<void>;
 }
 
 const hourOptions = [
@@ -26,6 +38,8 @@ const hourOptions = [
   { value: 'tuat', label: 'Tuất (19:00 - 21:00)' },
   { value: 'hoi', label: 'Hợi (21:00 - 23:00)' },
 ];
+
+const VISIBLE_LIMIT = 5;
 
 const formatSavedDate = (date?: string) => {
   if (!date) return 'Chưa có ngày sinh';
@@ -56,7 +70,7 @@ const LineChart = () => (
       <line key={line} x1={16 + line * 33} y1="18" x2={16 + line * 33} y2="80" stroke="#f3ece3" strokeWidth="1" />
     ))}
     <path d="M16 80 L38 51 L61 56 L83 34 L106 45 L130 27 L154 35 L181 12" fill="none" stroke="#bd8429" strokeWidth="2" />
-    {[ [16, 80], [38, 51], [61, 56], [83, 34], [106, 45], [130, 27], [154, 35], [181, 12] ].map(([x, y]) => (
+    {[[16, 80], [38, 51], [61, 56], [83, 34], [106, 45], [130, 27], [154, 35], [181, 12]].map(([x, y]) => (
       <circle key={`${x}-${y}`} cx={x} cy={y} r="2.8" fill="#bd8429" />
     ))}
     {['2026', '2028', '2030', '2032', '2034', '2036'].map((year, index) => (
@@ -70,12 +84,18 @@ const LineChart = () => (
 
 export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
   const { user } = useAuth();
-  const [savedHoroscopes, setSavedHoroscopes] = useState<any[]>([]);
+  const [savedHoroscopes, setSavedHoroscopes] = useState<Horoscope[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ name?: string; dob?: string }>({});
   const [formData, setFormData] = useState({
-    name: '',
-    dob: '',
-    hour: '',
+    name: 'Lê Đặng Gia Khánh',
+    dob: '2003-12-27',
+    hour: 'mui',
     gender: 'Nam giới',
     viewYear: new Date().getFullYear().toString(),
   });
@@ -87,12 +107,18 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
         return;
       }
 
+      setIsLoading(true);
+      setFetchError(false);
+
       try {
         const q = query(collection(db, 'horoscopes'), where('uid', '==', user.uid), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
-        setSavedHoroscopes(querySnapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
+        setSavedHoroscopes(querySnapshot.docs.map((item) => ({ id: item.id, ...item.data() } as Horoscope)));
       } catch (error) {
         console.error('Error fetching saved horoscopes', error);
+        setFetchError(true);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -106,13 +132,32 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
       setShowDeleteModal(null);
     } catch (error) {
       console.error('Error deleting horoscope', error);
+      setShowDeleteModal(null);
+      setDeleteError(true);
+      setTimeout(() => setDeleteError(false), 3000);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onGenerate(formData);
+    const errors: { name?: string; dob?: string } = {};
+    if (!formData.name.trim()) errors.name = 'Vui lòng nhập họ và tên';
+    if (!formData.dob) errors.dob = 'Vui lòng chọn ngày sinh';
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
+    setIsSubmitting(true);
+    try {
+      await onGenerate(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const visibleHoroscopes = showAll ? savedHoroscopes : savedHoroscopes.slice(0, VISIBLE_LIMIT);
+  const hiddenCount = savedHoroscopes.length - VISIBLE_LIMIT;
 
   return (
     <div
@@ -161,39 +206,43 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
               </div>
             </div>
 
-            <label className="mb-1.5 block text-[13px] font-medium text-[#2b2825]">Họ và tên</label>
-            <div className="relative mb-3">
+            <label htmlFor="fullname" className="mb-1.5 block text-[13px] font-medium text-[#2b2825]">Họ và tên</label>
+            <div className="relative mb-1">
               <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a39c97]" />
               <input
-                required
+                id="fullname"
+                autoComplete="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setFormErrors((prev) => ({ ...prev, name: undefined })); }}
                 placeholder="Nhập họ và tên đầy đủ"
-                className="h-9 w-full rounded border border-[#e4ded8] bg-white pl-10 pr-3 text-[13px] outline-none transition-colors placeholder:text-[#a19a95] focus:border-[#bd8429]"
+                className={`h-9 w-full rounded border bg-white pl-10 pr-3 text-[13px] outline-none transition-colors placeholder:text-[#a19a95] focus:border-[#bd8429] ${formErrors.name ? 'border-red-400' : 'border-[#e4ded8]'}`}
               />
             </div>
+            {formErrors.name && <p className="mb-2 text-[11px] text-red-500">{formErrors.name}</p>}
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-[13px] font-medium text-[#2b2825]">Ngày sinh dương lịch</label>
-                <div className="homepage-compact-field">
-                  <CustomDatePicker value={formData.dob} onChange={(value) => setFormData({ ...formData, dob: value })} placeholder="DD / MM / YYYY" />
+                <label htmlFor="dob" className="mb-1.5 block text-[13px] font-medium text-[#2b2825]">Ngày sinh dương lịch</label>
+                <div id="dob" className="homepage-compact-field">
+                  <CustomDatePicker value={formData.dob} onChange={(value) => { setFormData({ ...formData, dob: value }); setFormErrors((prev) => ({ ...prev, dob: undefined })); }} placeholder="DD / MM / YYYY" />
                 </div>
+                {formErrors.dob && <p className="mt-1 text-[11px] text-red-500">{formErrors.dob}</p>}
               </div>
               <div>
-                <label className="mb-1.5 block text-[13px] font-medium text-[#2b2825]">Giờ sinh <span className="font-normal text-[#6f6863]">(chọn khung giờ)</span></label>
-                <div className="homepage-compact-field">
+                <label htmlFor="hour" className="mb-1.5 block text-[13px] font-medium text-[#2b2825]">Giờ sinh <span className="font-normal text-[#6f6863]">(chọn khung giờ)</span></label>
+                <div id="hour" className="homepage-compact-field">
                   <CustomSelect value={formData.hour} onChange={(value) => setFormData({ ...formData, hour: value })} placeholder="Chọn khung giờ sinh" options={hourOptions} />
                 </div>
               </div>
             </div>
 
             <label className="mb-1.5 mt-3 block text-[13px] font-medium text-[#2b2825]">Giới tính</label>
-            <div className="grid grid-cols-2 gap-0">
+            <div className="grid grid-cols-2 gap-0" role="group" aria-label="Chọn giới tính">
               {['Nam giới', 'Nữ giới'].map((gender) => (
                 <button
                   key={gender}
                   type="button"
+                  aria-pressed={formData.gender === gender}
                   onClick={() => setFormData({ ...formData, gender })}
                   className={`h-9 border text-[13px] transition-colors ${gender === 'Nam giới' ? 'rounded-l' : 'rounded-r -ml-px'} ${
                     formData.gender === gender ? 'border-[#c58f35] bg-[#fffaf1] text-[#9b6b1d]' : 'border-[#e4ded8] bg-white text-[#4d4642]'
@@ -205,71 +254,110 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
               ))}
             </div>
 
-            <button type="submit" className="mt-4 flex h-13 w-full flex-col items-center justify-center rounded-md bg-[#1f1d1b] text-white shadow-[0_10px_22px_rgba(20,16,10,0.22)] transition-colors hover:bg-[#2d2b29]">
-              <span className="flex items-center gap-2 text-[16px] font-medium">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
-                </svg>
-                Khám Phá Lá Số
-              </span>
-              <span className="mt-0.5 text-[12px] opacity-75">Miễn phí · Không cần đăng ký</span>
+            <button type="submit" disabled={isSubmitting} className="mt-4 flex h-[52px] w-full flex-col items-center justify-center rounded-md bg-[#1f1d1b] text-white shadow-[0_10px_22px_rgba(20,16,10,0.22)] transition-colors hover:bg-[#2d2b29] disabled:opacity-60 disabled:cursor-not-allowed">
+              {isSubmitting ? (
+                <span className="flex items-center gap-2 text-[15px] font-medium">
+                  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
+                  </svg>
+                  Đang xử lý...
+                </span>
+              ) : (
+                <>
+                  <span className="flex items-center gap-2 text-[16px] font-medium">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
+                    </svg>
+                    Khởi tạo lá số
+                  </span>
+                  <span className="mt-0.5 text-[12px] opacity-75">Miễn phí · Không cần đăng ký</span>
+                </>
+              )}
             </button>
             <p className="mt-3 text-center text-[11px] leading-relaxed text-[#827a74]">
               Thông tin chỉ dùng để dựng lá số và có thể lưu lại khi bạn đăng nhập.
             </p>
           </form>
 
-          {user && savedHoroscopes.length > 0 && (
+          {user && (isLoading || fetchError || savedHoroscopes.length > 0) && (
             <div className="mt-4 w-full max-w-[440px] rounded-lg border border-[#eadfd6] bg-white/82 p-4 shadow-[0_12px_30px_rgba(50,36,23,0.07)] backdrop-blur-sm">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#b88327]">Đã lưu</p>
                   <h3 className="font-serif text-[18px] font-semibold text-[#1f1d1b]">Lá số gần đây</h3>
                 </div>
-                <span className="rounded-full bg-[#f5ece0] px-2.5 py-1 text-[11px] font-semibold text-[#9b6b1d]">
-                  {savedHoroscopes.length}
-                </span>
+                {!isLoading && !fetchError && (
+                  <span className="rounded-full bg-[#f5ece0] px-2.5 py-1 text-[11px] font-semibold text-[#9b6b1d]">
+                    {savedHoroscopes.length}
+                  </span>
+                )}
               </div>
 
-              <div className="max-h-[178px] space-y-2 overflow-y-auto pr-1 custom-scrollbar">
-                {savedHoroscopes.slice(0, 5).map((item) => (
-                  <div key={item.id} className="group flex items-center gap-3 rounded-md border border-[#eee5dc] bg-white/76 p-2.5 transition-colors hover:border-[#d8b77c] hover:bg-[#fffaf1]">
-                    <button
-                      type="button"
-                      onClick={() => onGenerate({
-                        id: item.id,
-                        name: item.name || '',
-                        dob: item.dob || '',
-                        hour: item.hour || '',
-                        gender: item.gender || 'Nam giới',
-                        viewYear: item.viewYear || new Date().getFullYear().toString(),
-                        analyses: item.analyses || {},
-                      })}
-                      className="min-w-0 flex-1 text-left"
-                    >
-                      <p className="truncate text-[13px] font-semibold text-[#2b2825]">{item.name || 'Lá số chưa đặt tên'}</p>
-                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#766e68]">
-                        <span className="inline-flex items-center gap-1">
-                          <CalendarDays className="h-3 w-3" />
-                          {formatSavedDate(item.dob)}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <Clock3 className="h-3 w-3" />
-                          {getHourLabel(item.hour)}
-                        </span>
+              {isLoading && (
+                <div className="space-y-2">
+                  {[1, 2].map((n) => (
+                    <div key={n} className="h-[54px] animate-pulse rounded-md bg-[#f3ede6]" />
+                  ))}
+                </div>
+              )}
+
+              {fetchError && (
+                <p className="text-center text-[12px] text-[#927a6a]">Không thể tải lá số. Vui lòng thử lại sau.</p>
+              )}
+
+              {!isLoading && !fetchError && (
+                <>
+                  <div className="space-y-2">
+                    {visibleHoroscopes.map((item) => (
+                      <div key={item.id} className="group flex items-center gap-3 rounded-md border border-[#eee5dc] bg-white/76 p-2.5 transition-colors hover:border-[#d8b77c] hover:bg-[#fffaf1]">
+                        <button
+                          type="button"
+                          onClick={() => onGenerate({
+                            id: item.id,
+                            name: item.name || '',
+                            dob: item.dob || '',
+                            hour: item.hour || '',
+                            gender: item.gender || 'Nam giới',
+                            viewYear: item.viewYear || new Date().getFullYear().toString(),
+                            analyses: item.analyses || {},
+                          })}
+                          className="min-w-0 flex-1 text-left"
+                        >
+                          <p className="truncate text-[13px] font-semibold text-[#2b2825]">{item.name || 'Lá số chưa đặt tên'}</p>
+                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#766e68]">
+                            <span className="inline-flex items-center gap-1">
+                              <CalendarDays className="h-3 w-3" />
+                              {formatSavedDate(item.dob)}
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <Clock3 className="h-3 w-3" />
+                              {getHourLabel(item.hour)}
+                            </span>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowDeleteModal(item.id)}
+                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[#9b8f87] transition-colors hover:bg-red-50 hover:text-red-600"
+                          aria-label={`Xóa lá số ${item.name || ''}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
-                    </button>
+                    ))}
+                  </div>
+
+                  {hiddenCount > 0 && !showAll && (
                     <button
                       type="button"
-                      onClick={() => setShowDeleteModal(item.id)}
-                      className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[#9b8f87] transition-colors hover:bg-red-50 hover:text-red-600"
-                      aria-label={`Xóa lá số ${item.name || ''}`}
+                      onClick={() => setShowAll(true)}
+                      className="mt-2 w-full text-center text-[11px] font-medium text-[#9b6b1d] hover:underline"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      Xem thêm {hiddenCount} lá số
                     </button>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </>
+              )}
             </div>
           )}
 
@@ -362,6 +450,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onGenerate }) => {
           </div>
         </div>
       </section>
+
+      {deleteError && (
+        <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-red-600 px-4 py-2.5 text-[13px] text-white shadow-lg">
+          Xóa thất bại. Vui lòng thử lại.
+        </div>
+      )}
 
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">

@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { HomeView } from './components/HomeView';
 import { HoroscopeView } from './components/HoroscopeView';
+import { OverviewDashboard } from './components/OverviewDashboard';
 import { generateChart, updateChartYear } from './utils/chartGenerator';
 import { Palace, CentralInfo } from './data/mockData';
 import { useAuth } from './contexts/AuthContext';
 import { db } from './lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
+type View = 'home' | 'chart' | 'overview';
+
 function App() {
-  const [currentView, setCurrentView] = useState<'home' | 'chart'>('home');
+  const [currentView, setCurrentView] = useState<View>('home');
   const [chartData, setChartData] = useState<{ palaces: Palace[], centralInfo: CentralInfo } | null>(null);
   const { user } = useAuth();
 
@@ -18,17 +21,15 @@ function App() {
     if (formData.isMock) {
       newChartData.centralInfo.isMock = true;
     }
-    
-    // If loading a saved horoscope, it might already have a docId and analyses
+
     if (formData.id) {
       newChartData.centralInfo.docId = formData.id;
       newChartData.centralInfo.analyses = formData.analyses || {};
     }
 
     setChartData(newChartData);
-    setCurrentView('chart');
+    setCurrentView('overview');
 
-    // Save to Firestore if user is logged in and it's not a mock chart and not already saved (no id)
     if (user && !formData.isMock && !formData.id) {
       try {
         const docRef = await addDoc(collection(db, 'horoscopes'), {
@@ -39,10 +40,9 @@ function App() {
           gender: formData.gender,
           viewYear: formData.viewYear,
           createdAt: new Date().toISOString(),
-          analyses: {} // Initialize empty analyses
+          analyses: {},
         });
-        
-        // Update local chart data with the new docId
+
         setChartData(prev => {
           if (!prev) return null;
           return {
@@ -50,12 +50,12 @@ function App() {
             centralInfo: {
               ...prev.centralInfo,
               docId: docRef.id,
-              analyses: {}
-            }
+              analyses: {},
+            },
           };
         });
       } catch (error) {
-        console.error("Error saving horoscope to Firestore", error);
+        console.error('Error saving horoscope to Firestore', error);
       }
     }
   };
@@ -66,16 +66,30 @@ function App() {
     }
   };
 
+  if (currentView === 'overview') {
+    return (
+      <OverviewDashboard
+        onNavigate={setCurrentView}
+        chartData={chartData}
+      />
+    );
+  }
+
+  if (currentView === 'chart') {
+    return (
+      <HoroscopeView
+        onNavigate={setCurrentView}
+        chartData={chartData}
+        onYearChange={handleYearChange}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f3e9] font-sans">
       <Header onNavigate={setCurrentView} />
-      
       <main>
-        {currentView === 'home' ? (
-          <HomeView onNavigate={setCurrentView} onGenerate={handleGenerate} />
-        ) : (
-          <HoroscopeView onNavigate={setCurrentView} chartData={chartData} onYearChange={handleYearChange} />
-        )}
+        <HomeView onNavigate={setCurrentView} onGenerate={handleGenerate} />
       </main>
     </div>
   );
