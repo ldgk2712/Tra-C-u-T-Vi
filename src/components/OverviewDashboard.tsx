@@ -196,8 +196,8 @@ const TrendChart: React.FC<{ viewYear: number }> = ({ viewYear }) => {
   const years = Array.from({ length: 11 }, (_, i) => viewYear - 5 + i);
   const rawValues = [42, 55, 60, 52, 68, 76, 72, 82, 77, 85, 70];
   const minV = 30, maxV = 95;
-  const W = 420, H = 80;
-  const padL = 30, padR = 14, padT = 8, padB = 22;
+  const W = 420, H = 180;
+  const padL = 58, padR = 24, padT = 22, padB = 34;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
 
@@ -210,7 +210,7 @@ const TrendChart: React.FC<{ viewYear: number }> = ({ viewYear }) => {
   const nowIdx = 5;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 80 }}>
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full">
       <defs>
         <linearGradient id="trendAreaGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#d4af37" stopOpacity="0.28" />
@@ -247,7 +247,7 @@ const TrendChart: React.FC<{ viewYear: number }> = ({ viewYear }) => {
         );
       })}
       <text x={padL - 5} y={padT + 3} textAnchor="end" fontSize="7.5" fill="#b8a898">Cao</text>
-      <text x={padL - 5} y={padT + chartH / 2 + 3} textAnchor="end" fontSize="7.5" fill="#b8a898">TB</text>
+      <text x={padL - 5} y={padT + chartH / 2 + 3} textAnchor="end" fontSize="7.5" fill="#b8a898">Trung bình</text>
       <text x={padL - 5} y={padT + chartH + 2} textAnchor="end" fontSize="7.5" fill="#b8a898">Thấp</text>
     </svg>
   );
@@ -711,7 +711,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ onNavigate
           <div className="grid gap-3" style={{ gridTemplateColumns: '3fr 2fr' }}>
 
             {/* Trend chart */}
-            <PanelCard>
+            <PanelCard className="h-full">
               <div className="px-5 py-3 border-b border-[#f0e8d8] flex items-center justify-between">
                 <div>
                   <p className="text-[12px] font-bold text-[#1f1d1b] tracking-tight">Dòng Chảy Năng Lượng Xuyên Suốt</p>
@@ -722,7 +722,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ onNavigate
                   <span>Vận khí</span>
                 </div>
               </div>
-              <div className="px-4 pt-3 pb-2">
+              <div className="px-6 py-5 h-[260px]">
                 <TrendChart viewYear={viewYear} />
               </div>
             </PanelCard>
